@@ -1,0 +1,65 @@
+--[[ 
+	clockWriter 1.1
+	Written for dan200's ComputerCraft 1.41
+	Written by MrBarry Sept. 2012
+	Designed as an API used by 'clock'
+	Requires a font file. 'numbers' was created for this purpose.
+	v1.1 Changelog:
+	 Added tolerance for font files which end prematurely.
+]]--
+function readFont(height, width, chars, fFile)
+  local f=fs.open(fFile, "r")
+  local d = {}
+  for i = 1,chars do
+    d[i]={}
+    for j = 1, height do
+      local fLine = f.readLine()
+      if fLine then
+        d[i][j] = string.sub(fLine,1,width)
+      end
+      --pad the lines to width
+      while #d[i][j]<width do
+        d[i][j] = d[i][j] .. " "
+      end
+    end
+  end
+  d[":"]={}
+  d["."]={}
+  for n,j in pairs({":","."}) do
+    for i = 1,height do
+      -- get seperator char
+      local fLine = f.readLine()
+      if fLine then
+        d[j][i] = string.sub(fLine,1,1)
+      else
+        d[j][i] = " "
+      end
+    end
+  end 
+  f.close()    
+  return d
+end
+
+local function printNum(num, font, mon)
+  local cx, cy = mon.getCursorPos()
+  local x = cx+1
+  local fontIndex = 1
+  if num == ":" or num == "." then
+    fontIndex = num
+  else  
+    fontIndex = num+1
+  end    
+  for i = 1,#font[fontIndex] do
+    mon.setCursorPos(x, i)
+    mon.write(font[fontIndex][i])
+  end  
+  return true
+end
+
+function printTime(t, font, mon)
+    mon.clear()
+    mon.setCursorPos(1,1)
+    for j in string.gmatch(t, "[%d:\.]") do
+      printNum(j, font, mon)
+    end
+end

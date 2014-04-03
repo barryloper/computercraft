@@ -1,0 +1,48 @@
+function readFont(height, width, chars, fFile)
+  local f=fs.open(fFile, "r")
+  local d = {}
+  for i = 1,chars do
+    d[i]={}
+    for j = 1, height do
+      d[i][j] = string.sub(f.readLine(),1,width)
+      --pad the lines to width
+      while #d[i][j]<width do
+        d[i][j] = d[i][j] .. " "
+      end
+    end
+  end
+  d[":"]={}
+  d["."]={}
+  for n,j in pairs({":","."}) do
+    for i = 1,height do
+      -- get seperator char
+      d[j][i] = string.sub(f.readLine(),1,1)
+    end
+  end 
+  f.close()    
+  return d
+end
+
+local function printNum(num, font, mon)
+  local cx, cy = mon.getCursorPos()
+  local x = cx+1
+  local fontIndex = 1
+  if num == ":" or num == "." then
+    fontIndex = num
+  else  
+    fontIndex = num+1
+  end    
+  for i = 1,#font[fontIndex] do
+    mon.setCursorPos(x, i)
+    mon.write(font[fontIndex][i])
+  end  
+  return true
+end
+
+function printTime(t, font, mon)
+    mon.clear()
+    mon.setCursorPos(1,1)
+    for j in string.gmatch(t, "[%d:\.]") do
+      printNum(j, font, mon)
+    end
+end

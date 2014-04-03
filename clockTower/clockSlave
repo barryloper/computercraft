@@ -1,0 +1,16 @@
+os.loadAPI("clockWriter")
+mon = peripheral.wrap("back")
+mon.setTextScale(3.5)
+tmX, tmY = term.getSize()
+tClockX = tmX - 5
+fnt = clockWriter.readFont(7, 4, 10, "numbers")
+------------------
+
+while true do
+  evt, id, msg = os.pullEvent("rednet_message")
+ if msg:find("^!time%d.*") then
+    clockWriter.printTime(msg:sub(6), fnt, mon)
+    term.setCursorPos(tClockX,1)
+    print(msg:sub(6))
+  end
+end

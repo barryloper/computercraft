@@ -1,0 +1,66 @@
+--Client machine{s} to send time to
+tClients={40, 41, 42}
+--These numbers come from os.Time()
+dayBreak = 5.629
+nightFall = 18.53
+mon=peripheral.wrap("back")
+rednet.open("top")
+mon.setTextScale(3.5)
+--This is parameters for the font reader
+--They are set up for the included 7x4 font named "numbers"
+local height, width, chars, fFile = 7, 4, 10, "numbers"
+local tmX, tmY = term.getSize()
+local cY = 1
+local cX = tmX - 5
+--------------------
+
+local function tToTime(t)
+  local s = t*50
+  local m = s/60
+  local ss= s%60
+  if m < 10 then
+    m = "0"..m
+  end
+  if ss < 10 then
+    ss = "0"..ss
+  end
+  return string.sub(m,1,2)..":"..string.sub(ss,1,2)
+end
+
+local function getRemaining()
+  local t = os.time()
+  local tLeft
+  if t < dayBreak then
+    tLeft =  dayBreak - t
+  elseif t < nightFall then
+    tLeft = nightFall - t
+  else
+    tLeft = dayBreak + 24 - t  
+  end  
+  return tToTime(tLeft)
+end
+
+local function consoleTime(t, x, y)
+  local oX, oY = term.getCursorPos()
+  term.setCursorPos(x,y)
+  term.write(t)
+  term.setCursorPos(oX,oY)
+end
+
+os.loadAPI("clockWriter") 
+
+
+local nums = clockWriter.readFont(height, width, chars, fFile)
+mon.setCursorPos(1,1)
+mon.clear()
+
+while true do
+  local tr = getRemaining()
+  clockWriter.printTime(tr, nums, mon)
+  for k,v in pairs(tClients) do
+    rednet.send(v, "!time"..tr)
+  end
+--  consoleTime(tr, cX, cY)
+  sleep(1)
+  mon.clear()
+end

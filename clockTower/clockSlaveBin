@@ -1,0 +1,21 @@
+local oputSide = "left"
+local x,y = term.getSize()
+--This is for outputing the time in the upper-right
+-- corner of the terminal
+local tClockX = x-5
+----------------------
+
+local function dispTime(_t, oSide)
+  local _h = bit.blshift(tonumber(_t:sub(1,2)), 6)
+  local _m = tonumber(_t:sub(4,5))
+  rs.setBundledOutput(oputSide, _h+_m) 
+end
+
+while true do
+ evt, id, msg = os.pullEvent("rednet_message")
+ if msg:find("^!time%d.*") then
+    dispTime(msg:sub(6), oputSide)
+    term.setCursorPos(tClockX,1)
+    print(msg:sub(6))
+  end
+end
